@@ -8,7 +8,7 @@
 
 const gamesCollection = require("../../db").db().collection("games")
 
-exports.victory = async (req, res) => {
+exports.game = async (req, res) => {
   const data = req.body
 
   gamesCollection.insertOne(data).then(entry => {

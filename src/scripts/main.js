@@ -48,10 +48,27 @@ const gameData = {
   present: Object()
 }
 
+const endGame = () => {
+  const data = gameData
+  data.result = "loss"
+
+  Axios.post(`${config.api}/log/game`, data).then(response => {
+    // @WORK
+    localStorage.removeItem("nyt-wordle-state")
+    location.reload()
+    return
+  })
+}
+
 /**
  * Parse Row
  */
 const parseRow = (callAPI = true) => {
+  if (gameData.currentRow >= rows.length) {
+    endGame()
+    return
+  }
+
   let currentGuess = ""
   let currentEmoji = ""
   const tiles = elements.tiles(rows[gameData.currentRow])
@@ -167,8 +184,8 @@ const parseRow = (callAPI = true) => {
   /// Make API call with gameData to get next suggestion
   if (callAPI) {
     Axios.post(`${config.api}/guess/get-word`, gameData)
-      .then(response => {
-        const word = response.data[0]?.word || null
+      .then(res => {
+        const word = res.data[0]?.word || null
         if (!word) {
           return
         }
@@ -181,18 +198,14 @@ const parseRow = (callAPI = true) => {
         ) {
           console.log("VICTORY!")
 
-          Axios.post(`${config.api}/log/victory`, gameData).then(
-            response => {
-              const word = response.data[0]?.word || null
-              console.log("******************")
-              console.log("VICTORY WORD")
-              console.log(word)
-              // @WORK
-              localStorage.removeItem("nyt-wordle-state")
-              location.reload()
-              return
-            }
-          )
+          const data = gameData
+          data.result = "win"
+          Axios.post(`${config.api}/log/game`, data).then(res => {
+            // @WORK
+            localStorage.removeItem("nyt-wordle-state")
+            location.reload()
+            return
+          })
         }
 
         word.split("").forEach((key, idx) => {
