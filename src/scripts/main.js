@@ -11,14 +11,10 @@ import GameConfig from "./utils/game-config"
 import typeLetter from "./utils/type-letter"
 import states from "./constants/states"
 
-const API_URL =
-  "https://corsanywhere.herokuapp.com/http://localhost:8080/v1/guess/get-word"
+// const API_URL =
+//   "https://corsanywhere.herokuapp.com/http://localhost:8080/v1/guess/get-word"
 // const API_URL =
 //   "https://corsanywhere.herokuapp.com/https://wrdl.glitch.me/guess"
-
-console.log("******************")
-console.log("API_URL")
-console.log(API_URL)
 
 /// Configuration
 const config = new GameConfig({
@@ -27,7 +23,7 @@ const config = new GameConfig({
     official: "https://www.nytimes.com/games/wordle/index.html",
     unlimited: "https://www.wordleunlimited.com/"
   },
-  api: API_URL
+  api: "https://corsanywhere.herokuapp.com/https://cheatle-api.herokuapp.com/v1"
 })
 
 /// Initialize config
@@ -170,7 +166,7 @@ const parseRow = (callAPI = true) => {
 
   /// Make API call with gameData to get next suggestion
   if (callAPI) {
-    Axios.post(config.api, gameData)
+    Axios.post(`${config.api}/guess/get-word`, gameData)
       .then(response => {
         const word = response.data[0]?.word || null
         if (!word) {
@@ -185,9 +181,18 @@ const parseRow = (callAPI = true) => {
         ) {
           console.log("VICTORY!")
 
-          localStorage.removeItem("nyt-wordle-state")
-          location.reload()
-          return
+          Axios.post(`${config.api}/log/victory`, gameData).then(
+            response => {
+              const word = response.data[0]?.word || null
+              console.log("******************")
+              console.log("VICTORY WORD")
+              console.log(word)
+              // @WORK
+              localStorage.removeItem("nyt-wordle-state")
+              location.reload()
+              return
+            }
+          )
         }
 
         word.split("").forEach((key, idx) => {
